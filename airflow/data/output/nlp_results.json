@@ -41,38 +41,30 @@
       "count": 8
     }
   ],
-  "summary": "While they agreed that as young girls they might have been influenced by movies and expected that kind of cinematic experience, when they actually started experiencing love or felt the emotion, it was not the Bollywood gimmicks they fell for, but rather for the:\n\nOpenness in communication\nUnderstanding\nAppreciation\nFriendship that didn\u2019t judge them\nWomen cutely set the bare minimum to things like:\n\nHaving a nice bowl of Maggi together\nWatching a movie together after a hectic day of work\nEven small, noticeable attempts by their partner to spend some quality time with them and talk about how their day went\nAll the responses were singing a chorus of the same ask:\n\nBeing able to completely trust someone and spend some quality time with them. Many responses echoed:\n\n\u201cWe are in this together \u2764\ufe0f\u201d\n\nSome women are noticeably head over heels, as their response said:\n\n\u201cI might have had high standards set for my partner, but you make it look like it\u2019s the bare minimum.\u201d\n\nOthers said:\n\n\u201cI love you more than I could ever try and express.\u201d\n\nThat\u2019s all I had asked my beautiful women\u200a\u2014\u200aand aren\u2019t they sweet?! There was one answer that I appreciated \u2014 even while not trying to be biased or judgmental \u2014 and it goes:\n\n\u201cI do express to know if I\u2019m fooling myself or if the other person feels something too.\u201d\n\nTrust me, this can save young girls and emotionally invested women from a lot of sadness that could come from heartbreaks or one-sided love. One respondent put it powerfully:\n\n\u201cLove can be unconditional, but relationships are a bit conditional \u2014 they\u2019re about walking together, adjusting, surviving.\u201d\n\nLove was also described as comfort, companionship, and emotional safety. Emotional intimacy is a key foundation of a healthy relationship \u2014 it builds trust, provides emotional security, relieves stress, and can ultimately make or break the relationship, forming the base of love itself.",
+  "summary": "There was one answer that I appreciated \u2014 even while not trying to be biased or judgmental \u2014 and it goes:\n\n\u201cI do express to know if I\u2019m fooling myself or if the other person feels something too.\u201d\n\nTrust me, this can save young girls and emotionally invested women from a lot of sadness that could come from heartbreaks or one-sided love. One respondent put it powerfully:\n\n\u201cLove can be unconditional, but relationships are a bit conditional \u2014 they\u2019re about walking together, adjusting, surviving.\u201d\n\nLove was also described as comfort, companionship, and emotional safety. Some women are noticeably head over heels, as their response said:\n\n\u201cI might have had high standards set for my partner, but you make it look like it\u2019s the bare minimum.\u201d\n\nOthers said:\n\n\u201cI love you more than I could ever try and express.\u201d. Emotional intimacy is a key foundation of a healthy relationship \u2014 it builds trust, provides emotional security, relieves stress, and can ultimately make or break the relationship, forming the base of love itself. They need to understand that women are not challenging them when they are admitting that they are not interested in the relationship moving forward.\u201d\n\nWhat advice would you give your younger self (or another girl) about love and relationships?",
   "sentiment": {
     "tone": "Positive",
     "polarity": 0.2,
     "subjectivity": 0.54
   },
   "entities": {
-    "PERSON": [
-      "Women",
-      "Honestly",
-      "Unless",
-      "Shared",
-      "Love",
-      "Maggi"
+    "WORK_OF_ART": [
+      "Love"
     ],
     "GPE": [
       "Bollywood"
     ],
-    "ORGANIZATION": [
-      "Good",
-      "Common",
-      "Fairness Willingness",
-      "Bollywood"
+    "ORG": [
+      "Maggi"
     ]
   },
   "readability": {
-    "score": 26.98,
-    "level": "Difficult"
+    "score": 56.1,
+    "level": "Moderate"
   },
   "snippets": [
-    "While they agreed that as young girls they might have been influenced by movies and expected that kind of cinematic experience, when they actually started experiencing love or felt the emotion, it was not the Bollywood gimmicks they fell for, but rather for the:\n\nOpenness in communication\nUnderstanding\nAppreciation\nFriendship that didn\u2019t judge them\nWomen cutely set the bare minimum to things like:\n\nHaving a nice bowl of Maggi together\nWatching a movie together after a hectic day of work\nEven small, noticeable attempts by their partner to spend some quality time with them and talk about how their day went\nAll the responses were singing a chorus of the same ask:\n\nBeing able to completely trust someone and spend some quality time with them.",
-    "There was one answer that I appreciated \u2014 even while not trying to be biased or judgmental \u2014 and it goes:\n\n\u201cI do express to know if I\u2019m fooling myself or if the other person feels something too.\u201d\n\nTrust me, this can save young girls and emotionally invested women from a lot of sadness that could come from heartbreaks or one-sided love.",
-    "It is about sharing thoughts, fears, pain, and happiness without fear of judgment, feeling safe to be vulnerable, and feeling emotionally connected.\u201d\n\nMental and emotional presence matters more than physical presence, and a strong emotional bond can sustain even long-distance relationships."
+    "There was one answer that I appreciated \u2014 even while not trying to be biased or judgmental \u2014 and it goes: \u201cI do express to know if I\u2019m fooling myself or if the other person feels something too.\u201d Trust me, this can save young girls and emotionally invested women from a lot of sadn",
+    "It is about sharing thoughts, fears, pain, and happiness without fear of judgment, feeling safe to be vulnerable, and feeling emotionally connected.\u201d Mental and emotional presence matters more than physical presence, and a strong emotional bond can sustain even long-distance rela",
+    "While they agreed that as young girls they might have been influenced by movies and expected that kind of cinematic experience, when they actually started experiencing love or felt the emotion, it was not the Bollywood gimmicks they fell for, but rather for the: Openness in commu"
   ]
 }

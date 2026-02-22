@@ -129,3 +129,4 @@ websockets==16.0
 wirerope==1.0.0
 wrapt==2.1.1
 zipp==3.23.0
+spacy

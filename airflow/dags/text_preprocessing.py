@@ -27,6 +27,57 @@ def load_article(**context):
     context['ti'].xcom_push(key='article_text', value=article)
 
 
+def clean_article(**context):
+    """
+    Normalizes raw article text before NLP processing.
+    """
+    raw = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
+
+    if not raw:
+        context['ti'].xcom_push(key='clean_text', value=raw)
+        return
+        
+    lines = raw.splitlines()
+    processed_lines = []
+    list_buffer = []
+
+    def flush_list(buf):
+        """Join buffered list items as an inline comma-separated sentence."""
+        if not buf:
+            return
+        joined = ", ".join(item.strip(" \t–•-") for item in buf if item.strip())
+        if joined:
+            processed_lines.append(joined.rstrip(",") + ".")
+
+    for line in lines:
+        stripped = line.strip()
+        is_list_item = (
+            stripped
+            and len(stripped) <= 60
+            and not stripped[-1] in ".!?:\"'"
+            and not stripped.startswith("#")   # keep markdown headings as-is
+        )
+        if is_list_item:
+            list_buffer.append(stripped)
+        else:
+            flush_list(list_buffer)
+            list_buffer = []
+            processed_lines.append(line)
+
+    flush_list(list_buffer)  # flush any trailing list block
+
+    text = "\n".join(processed_lines)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+    text = re.sub(r'[ \t]+', ' ', text)
+    text = text.strip()
+
+    print(f"Cleaned article: {len(text)} characters (was {len(raw)})")
+    context['ti'].xcom_push(key='clean_text', value=text)
+CLEAN_TASK_ID  = 'clean_article'
+CLEAN_XCOM_KEY = 'clean_text'
+
+
 def extract_keywords(**context):
     import nltk
     from nltk.tokenize import word_tokenize
@@ -36,7 +87,7 @@ def extract_keywords(**context):
     nltk.download('punkt_tab', quiet=True)
     nltk.download('stopwords', quiet=True)
 
-    article = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
+    article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     tokens = word_tokenize(article.lower())
     stop_words = set(stopwords.words('english'))
     filtered = [w for w in tokens if w.isalpha() and w not in stop_words]
@@ -56,7 +107,7 @@ def summarize_article(**context):
     nltk.download('punkt_tab', quiet=True)
     nltk.download('stopwords', quiet=True)
 
-    article = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
+    article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     sentences = sent_tokenize(article)
     tokens = word_tokenize(article.lower())
     stop_words = set(stopwords.words('english'))
@@ -78,7 +129,7 @@ def summarize_article(**context):
 def analyze_sentiment(**context):
     from textblob import TextBlob
 
-    article = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
+    article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     blob = TextBlob(article)
     polarity = blob.sentiment.polarity
     subjectivity = blob.sentiment.subjectivity
@@ -90,27 +141,33 @@ def analyze_sentiment(**context):
 
 def extract_entities(**context):
     import spacy
-
-    article = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
-
-    # Debug: confirm article is being received via XCom
+    article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     print(f"Article length received: {len(article) if article else 0}")
-
     if not article:
         print("WARNING: No article text received from XCom")
         context['ti'].xcom_push(key='entities', value={})
         return
-
-    nlp = spacy.load("en_core_web_sm")
+    try:
+        nlp = spacy.load("en_core_web_md")
+    except OSError:
+        print("WARNING: en_core_web_md not found, falling back to en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
     doc = nlp(article)
 
+    # Collect entities, filtering out obvious false positives:
+    # keep only labels that make sense for article analysis
+    VALID_LABELS = {"PERSON", "ORG", "GPE", "LOC", "EVENT", "WORK_OF_ART", "NORP", "FAC", "PRODUCT"}
     entities = {}
     for ent in doc.ents:
+        if ent.label_ not in VALID_LABELS:
+            continue
+        # Skip single-word, all-lowercase entities — likely misclassified common words
+        if ent.text == ent.text.lower() and " " not in ent.text:
+            continue
         entities.setdefault(ent.label_, []).append(ent.text)
 
     # Deduplicate
     entities = {k: list(set(v)) for k, v in entities.items()}
-
     context['ti'].xcom_push(key='entities', value=entities)
     print(f"Entities extracted: {entities}")
 
@@ -121,12 +178,21 @@ def compute_readability(**context):
     nltk.download('punkt', quiet=True)
     nltk.download('punkt_tab', quiet=True)
 
-    article = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
+    article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     sentences = sent_tokenize(article)
     words = [w for w in word_tokenize(article) if w.isalpha()]
 
     def count_syllables(word):
-        return max(1, len(re.findall(r'[aeiou]', word.lower())))
+        """
+        More accurate syllable counter using standard vowel-group rules:
+        counts vowel groups, handles silent-e, and enforces a minimum of 1.
+        """
+        word = word.lower()
+        # Remove silent trailing 'e' (unless the word is very short)
+        if len(word) > 3 and word.endswith('e'):
+            word = word[:-1]
+        vowel_groups = re.findall(r'[aeiou]+', word)
+        return max(1, len(vowel_groups))
 
     total_syllables = sum(count_syllables(w) for w in words)
     score = 206.835 - 1.015 * (len(words) / len(sentences)) - 84.6 * (total_syllables / len(words))
@@ -142,7 +208,7 @@ def generate_snippets(**context):
     nltk.download('punkt', quiet=True)
     nltk.download('punkt_tab', quiet=True)
 
-    article = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
+    article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     sentences = sent_tokenize(article)
 
     candidates = []
@@ -189,6 +255,11 @@ with DAG(
         python_callable=load_article,
     )
 
+    t_clean = PythonOperator(
+        task_id='clean_article',
+        python_callable=clean_article,
+    )
+
     t_keywords = PythonOperator(
         task_id='extract_keywords',
         python_callable=extract_keywords,
@@ -207,7 +278,7 @@ with DAG(
     t_entities = PythonOperator(
         task_id='extract_entities',
         python_callable=extract_entities,
-        execution_timeout=timedelta(minutes=10),  # spaCy model loading needs extra time
+        execution_timeout=timedelta(minutes=10),
     )
 
     t_readability = PythonOperator(
@@ -225,4 +296,5 @@ with DAG(
         python_callable=save_results,
     )
 
-    t_load >> [t_keywords, t_summary, t_sentiment, t_entities, t_readability, t_snippets] >> t_save
+    # load → clean → [all analysis tasks] → save
+    t_load >> t_clean >> [t_keywords, t_summary, t_sentiment, t_entities, t_readability, t_snippets] >> t_save
