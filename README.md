@@ -87,11 +87,9 @@ pip freeze > requirements.txt
 ```bash
 airflow db migrate
 ```
-
-### 6. Create the data folders
-
-```bash
-mkdir -p data/input data/output
+### 6. Run Airflow locally
+```
+airflow standalone
 ```
 
 ---
