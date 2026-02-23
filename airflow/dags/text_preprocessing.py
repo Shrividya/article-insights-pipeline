@@ -34,9 +34,8 @@ def clean_article(**context):
     raw = context['ti'].xcom_pull(key='article_text', task_ids='load_article')
 
     if not raw:
-        context['ti'].xcom_push(key='clean_text', value=raw)
-        return
-        
+        raise ValueError("Empty article text received from XCom — load_article likely failed. Check that the input file exists at the expected path.")
+
     lines = raw.splitlines()
     processed_lines = []
     list_buffer = []
@@ -67,13 +66,21 @@ def clean_article(**context):
     flush_list(list_buffer)  # flush any trailing list block
 
     text = "\n".join(processed_lines)
+
+    # collapse multiple blank lines → single paragraph separator
     text = re.sub(r'\n{3,}', '\n\n', text)
+
+    # replace single mid-paragraph newlines with a space
     text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+
+    #collapse runs of whitespace (but not paragraph breaks)
     text = re.sub(r'[ \t]+', ' ', text)
     text = text.strip()
 
     print(f"Cleaned article: {len(text)} characters (was {len(raw)})")
     context['ti'].xcom_push(key='clean_text', value=text)
+
+
 CLEAN_TASK_ID  = 'clean_article'
 CLEAN_XCOM_KEY = 'clean_text'
 
@@ -120,7 +127,7 @@ def summarize_article(**context):
             if word in freq:
                 scores[sent] = scores.get(sent, 0) + freq[word]
 
-    ranked = sorted(scores, key=scores.get, reverse=True)
+    ranked = [s for s in sorted(scores, key=scores.get, reverse=True) if not s.strip().endswith("?")]
     summary = " ".join(ranked[:5])
     context['ti'].xcom_push(key='summary', value=summary)
     print("Summary generated.")
@@ -141,17 +148,21 @@ def analyze_sentiment(**context):
 
 def extract_entities(**context):
     import spacy
+
     article = context['ti'].xcom_pull(key=CLEAN_XCOM_KEY, task_ids=CLEAN_TASK_ID)
     print(f"Article length received: {len(article) if article else 0}")
+
     if not article:
         print("WARNING: No article text received from XCom")
         context['ti'].xcom_push(key='entities', value={})
         return
+
     try:
         nlp = spacy.load("en_core_web_md")
     except OSError:
         print("WARNING: en_core_web_md not found, falling back to en_core_web_sm")
         nlp = spacy.load("en_core_web_sm")
+
     doc = nlp(article)
 
     # Collect entities, filtering out obvious false positives:
@@ -168,6 +179,7 @@ def extract_entities(**context):
 
     # Deduplicate
     entities = {k: list(set(v)) for k, v in entities.items()}
+
     context['ti'].xcom_push(key='entities', value=entities)
     print(f"Entities extracted: {entities}")
 
@@ -216,7 +228,7 @@ def generate_snippets(**context):
         clean = s.replace("\n", " ").strip()
         clean = re.sub(r'\s+', ' ', clean)
         if len(clean.split()) > 12 and "?" not in clean:
-            candidates.append(clean[:280])
+            candidates.append(clean)
 
     snippets = sorted(candidates, key=len, reverse=True)[:3]
     context['ti'].xcom_push(key='snippets', value=snippets)
