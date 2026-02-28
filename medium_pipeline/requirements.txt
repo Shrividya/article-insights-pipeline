@@ -1,0 +1,115 @@
+# ----- NLP and ML -----
+nltk
+spacy
+textblob
+
+transformers
+torch
+tokenizers
+safetensors
+huggingface_hub
+
+numpy
+scipy
+
+thinc
+blis
+murmurhash
+preshed
+cymem
+srsly
+catalogue
+confection
+wasabi
+weasel
+regex
+sympy
+mpmath
+
+# ----- spaCy models -----
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl
+
+# ----- Airflow -----
+apache-airflow
+apache-airflow-core
+apache-airflow-task-sdk
+
+apache-airflow-providers-common-compat
+apache-airflow-providers-common-io
+apache-airflow-providers-common-sql
+apache-airflow-providers-docker
+apache-airflow-providers-smtp
+apache-airflow-providers-standard
+
+# ----- Web / API -----
+fastapi
+fastapi-cli
+starlette
+uvicorn
+uvloop
+httptools
+websockets
+httpx
+httpcore
+h11
+anyio
+sniffio
+python-multipart
+
+# ----- Database / ORM -----
+SQLAlchemy
+SQLAlchemy-JSONField
+SQLAlchemy-Utils
+alembic
+aiosqlite
+greenlet
+
+# ----- OpenTelemetry -----
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-proto
+opentelemetry-exporter-otlp
+opentelemetry-exporter-otlp-proto-common
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions
+
+# ----- Utilities -----
+requests
+urllib3
+charset-normalizer
+certifi
+idna
+
+tqdm
+tenacity
+packaging
+python-dateutil
+pytz
+tzdata
+PyYAML
+python-dotenv
+joblib
+filelock
+fsspec
+cloudpathlib
+smart_open
+networkx
+psutil
+tabulate
+rich
+Pygments
+click
+typer
+typing_extensions
+
+# ----- Testing -----
+pytest
+pytest-mock
+
+# ----- Security -----
+cryptography
+cffi
+pycparser
+PyJWT

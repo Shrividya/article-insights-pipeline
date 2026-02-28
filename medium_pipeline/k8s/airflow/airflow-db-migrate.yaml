@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airflow-db-migrate
+  namespace: airflow
+spec:
+  ttlSecondsAfterFinished: 300   # auto-clean after 5 min
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        # Wait for postgres to be ready before migrating
+        - name: wait-for-postgres
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z airflow-postgres 5432; do
+                echo "waiting for postgres..."; sleep 3;
+              done
+      containers:
+        - name: db-migrate
+          image: my-medium_pipeline:3.1.7
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+            - |
+              airflow db migrate
+              airflow users create \
+                --username admin \
+                --password $(AIRFLOW_ADMIN_PASSWORD) \
+                --firstname Admin \
+                --lastname User \
+                --role Admin \
+                --email admin@example.com || true
+          envFrom:
+            - configMapRef:
+                name: airflow-config
+            - secretRef:
+                name: airflow-secrets
+          env:
+            - name: AIRFLOW__CORE__FERNET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airflow-secrets
+                  key: AIRFLOW__CORE__FERNET_KEY
+            - name: AIRFLOW_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: airflow-secrets
+                  key: AIRFLOW_ADMIN_PASSWORD

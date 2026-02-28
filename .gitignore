@@ -15,8 +15,8 @@ MANIFEST
 # ========================
 # Virtual Environments
 # ========================
-airflow/airflow-env/
-airflow/airflow.*
+medium_pipeline/airflow-env/
+medium_pipeline/airflow.*
 .env
 .envrc
 .venv
@@ -30,7 +30,7 @@ ENV/
 airflow.cfg
 airflow.db
 standalone_admin_password.txt
-airflow/simple_auth_manager_passwords.*
+medium_pipeline/simple_auth_manager_passwords.*
 logs/
 
 # ========================

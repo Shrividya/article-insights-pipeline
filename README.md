@@ -55,8 +55,8 @@ cd article-insights-pipeline
 ### 2. Create and activate a virtual environment
 
 ```bash
-python -m venv airflow-env
-source airflow-env/bin/activate
+python -m venv medium_pipeline-env
+source medium_pipeline-env/bin/activate
 ```
 
 ### 3. Set environment variables
