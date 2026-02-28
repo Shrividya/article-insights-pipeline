@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-config
+  namespace: airflow
+data:
+  AIRFLOW_HOME: /app/airflow
+  AIRFLOW__CORE__DAGS_FOLDER: /app/dag
+  AIRFLOW__CORE__PLUGINS_FOLDER: /app/plugins
+  AIRFLOW__CORE__BASE_LOG_FOLDER: /app/airflow/logs
+  AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+  AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
+  # Airflow 3.x requires the execution API server URL
+  AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://medium_pipeline:medium_pipeline@airflow-postgres:5432/medium_pipeline"
+  AIRFLOW__CELERY__BROKER_URL: "redis://airflow-redis:6379/0"
+  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://medium_pipeline:medium_pipeline@airflow-postgres:5432/medium_pipeline"
+  # Celery worker queues — default worker handles lightweight tasks, nlp worker handles heavy NLP
+  AIRFLOW__CELERY__DEFAULT_QUEUE: "default"

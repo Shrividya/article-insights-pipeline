@@ -1,0 +1,130 @@
+x-airflow-common: &airflow-common
+  build: .
+  image: my-medium_pipeline:3.1.7
+  environment: &airflow-common-env
+    AIRFLOW_HOME: /app/airflow
+    AIRFLOW__CORE__DAGS_FOLDER: /app/dag
+    AIRFLOW__CORE__PLUGINS_FOLDER: /app/plugins
+    AIRFLOW__CORE__BASE_LOG_FOLDER: /app/airflow/logs
+    AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+    AIRFLOW__CORE__INTERNAL_API_SECRET: ${SECRET_KEY}
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://medium_pipeline:medium_pipeline@postgres/medium_pipeline
+    AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://medium_pipeline:medium_pipeline@postgres/medium_pipeline
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
+    AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+
+  volumes:
+    - ./dag:/app/dag
+    - ./logs:/app/airflow/logs
+    - ./plugins:/app/plugins
+    - ./data:/app/data
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+  user: "50000:0"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: medium_pipeline-postgres
+    environment:
+      POSTGRES_USER: medium_pipeline
+      POSTGRES_PASSWORD: medium_pipeline
+      POSTGRES_DB: medium_pipeline
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "medium_pipeline"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: medium_pipeline-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com || true
+    restart: "no"
+
+  airflow-apiserver:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      airflow-apiserver:
+        condition: service_started
+    restart: unless-stopped
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+    depends_on:
+      airflow-apiserver:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    restart: unless-stopped
+
+  airflow-triggerer:
+    <<: *airflow-common
+    command: triggerer
+    restart: unless-stopped
+
+  flower:
+    <<: *airflow-common
+    command: celery flower
+    ports:
+      - "5555:5555"
+    depends_on:
+      airflow-worker:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
