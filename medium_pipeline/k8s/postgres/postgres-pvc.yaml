@@ -9,6 +9,9 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: airflow-scripts-pvc
+    namespace: airflow
   hostPath:
     path: /apps/medium-pipeline/scripts
 ---
@@ -23,6 +26,9 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: airflow-dags-pvc
+    namespace: airflow
   hostPath:
     path: /apps/medium-pipeline/k8s/dag
 ---
@@ -37,6 +43,9 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: airflow-logs-pvc
+    namespace: airflow
   hostPath:
     path: /apps/medium-pipeline/logs
 ---
@@ -51,6 +60,9 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: airflow-plugins-pvc
+    namespace: airflow
   hostPath:
     path: /apps/medium-pipeline/plugins
 ---
@@ -65,6 +77,9 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: airflow-data-pvc
+    namespace: airflow
   hostPath:
     path: /apps/medium-pipeline/data
 ---
@@ -79,6 +94,9 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: postgres-pvc
+    namespace: airflow
   hostPath:
     path: /apps/medium-pipeline/k8s/postgres
 ---
@@ -147,7 +165,6 @@ spec:
     requests:
       storage: 5Gi
 ---
-
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
