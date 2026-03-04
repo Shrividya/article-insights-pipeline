@@ -9,9 +9,9 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
     AIRFLOW__CORE__INTERNAL_API_SECRET: ${SECRET_KEY}
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://medium_pipeline:medium_pipeline@postgres/medium_pipeline
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://medium_pipeline:medium_pipeline@postgres/medium_pipeline
+    AIRFLOW__CELERY__RESULT_BACKEND: ${AIRFLOW__CELERY__RESULT_BACKEND}
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
     AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
@@ -22,7 +22,6 @@ x-airflow-common: &airflow-common
     - ./logs:/app/airflow/logs
     - ./plugins:/app/plugins
     - ./data:/app/data
-    - /var/run/docker.sock:/var/run/docker.sock
 
   depends_on:
     postgres:
@@ -39,7 +38,7 @@ services:
     container_name: medium_pipeline-postgres
     environment:
       POSTGRES_USER: medium_pipeline
-      POSTGRES_PASSWORD: medium_pipeline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medium_pipeline}
       POSTGRES_DB: medium_pipeline
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -69,7 +68,7 @@ services:
         airflow db migrate
         airflow users create \
           --username admin \
-          --password admin \
+          --password ${AIRFLOW_ADMIN_PASSWORD:-admin} \
           --firstname Admin \
           --lastname User \
           --role Admin \

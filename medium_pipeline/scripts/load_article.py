@@ -1,11 +1,8 @@
-def load_article():
-    import os, sys
+import os, sys
 
-    INPUT = "/data/input/medium.txt"
-    OUTPUT = "/data/intermediate/article_raw.txt"
-
-    os.makedirs(os.path.dirname("/data/intermediate"), exist_ok=True)
-
+def load_article(input_path: str = "/data/input/medium.txt"):
+    INPUT = input_path
+    os.makedirs(os.path.dirname("/data/intermediate/"), exist_ok=True)
     try:
         with open(INPUT, "r", encoding="utf-8") as f:
             article = f.read()
@@ -17,8 +14,3 @@ def load_article():
     if not article.strip():
         print("ERROR: Input file is empty.", file=sys.stderr)
         sys.exit(1)
-
-    with open(OUTPUT, "w", encoding="utf-8") as f:
-        f.write(article)
-
-    print(f"Raw article written to {OUTPUT}")
