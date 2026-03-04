@@ -1,8 +1,6 @@
-def save_results():
-    import json, os, sys
-
+import json, os, sys
+def save_results(OUTPUT):
     INTERMEDIATE = "/data/intermediate"
-    OUTPUT = "/data/output/nlp_results.json"
 
     def load(filename: str):
         path = os.path.join(INTERMEDIATE, filename)
