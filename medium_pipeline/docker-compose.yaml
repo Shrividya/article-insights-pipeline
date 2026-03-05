@@ -1,5 +1,4 @@
 x-airflow-common: &airflow-common
-  build: .
   image: my-medium_pipeline:3.1.7
   environment: &airflow-common-env
     AIRFLOW_HOME: /app/airflow
@@ -7,7 +6,6 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__PLUGINS_FOLDER: /app/plugins
     AIRFLOW__CORE__BASE_LOG_FOLDER: /app/airflow/logs
     AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
-    AIRFLOW__CORE__INTERNAL_API_SECRET: ${SECRET_KEY}
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
